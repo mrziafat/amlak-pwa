@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#163a5f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles.css">
+<title>املاک من</title>
+</head>
+<body>
+<header class="topbar">
+  <div>
+    <div class="brand">املاک من</div>
+    <div class="subtitle">ثبت سریع بازدید و پیگیری</div>
+  </div>
+  <button id="installBtn" class="icon-btn hidden" title="نصب">＋</button>
+</header>
+
+<main>
+<section id="home" class="screen active">
+  <div class="hero">
+    <div><h1>امروز چه کاری دارید؟</h1><p id="todayText"></p></div>
+    <button class="primary big" data-action="new-visit">＋ ثبت بازدید</button>
+  </div>
+  <div class="stats">
+    <div class="stat"><b id="statToday">0</b><span>پیگیری امروز</span></div>
+    <div class="stat"><b id="statLate">0</b><span>عقب‌افتاده</span></div>
+    <div class="stat"><b id="statClients">0</b><span>مشتری</span></div>
+    <div class="stat"><b id="statProps">0</b><span>ملک</span></div>
+  </div>
+  <div class="section-title"><h2>پیگیری‌های نزدیک</h2><button class="text-btn" data-nav="followups">همه</button></div>
+  <div id="homeFollowups" class="cards"></div>
+</section>
+
+<section id="visit" class="screen">
+  <div class="page-head"><button class="back" data-nav="home">‹</button><h2>ثبت سریع بازدید</h2></div>
+  <form id="visitForm" class="form">
+    <label>مشتری
+      <input id="vClient" list="clientList" placeholder="نام مشتری را بنویسید">
+      <datalist id="clientList"></datalist>
+    </label>
+    <label>ملک
+      <input id="vProperty" list="propertyList" placeholder="کد یا آدرس ملک">
+      <datalist id="propertyList"></datalist>
+    </label>
+    <div class="grid2">
+      <label>نتیجه بازدید
+        <select id="vResult">
+          <option value="علاقه‌مند">علاقه‌مند</option>
+          <option value="مردد">مردد</option>
+          <option value="قیمت بالا">قیمت بالا</option>
+          <option value="نپسندید">نپسندید</option>
+          <option value="نیاز به بازدید مجدد">نیاز به بازدید مجدد</option>
+          <option value="مذاکره">مذاکره</option>
+        </select>
+      </label>
+      <label>قیمت پیشنهادی
+        <input id="vPrice" inputmode="numeric" placeholder="مثلاً ۶۵۰۰ میلیون">
+      </label>
+    </div>
+    <label>اقدام بعدی
+      <input id="vAction" placeholder="مثلاً تماس با مالک">
+    </label>
+    <div class="grid2">
+      <label>تاریخ پیگیری
+        <input id="vFollowDate" type="date">
+      </label>
+      <label>ساعت
+        <input id="vFollowTime" type="time">
+      </label>
+    </div>
+    <label>یادداشت
+      <div class="voice-row">
+        <textarea id="vNote" rows="3" placeholder="یک جمله کوتاه..."></textarea>
+        <button type="button" id="voiceBtn" class="voice" title="ثبت صوتی">🎙️</button>
+      </div>
+    </label>
+    <button class="primary submit" type="submit">✓ ثبت بازدید</button>
+  </form>
+</section>
+
+<section id="clients" class="screen">
+  <div class="page-head"><h2>مشتریان</h2><button class="primary small" id="addClient">＋ مشتری</button></div>
+  <input class="search" id="clientSearch" placeholder="جست‌وجوی نام، شماره یا منطقه...">
+  <div id="clientCards" class="cards"></div>
+</section>
+
+<section id="properties" class="screen">
+  <div class="page-head"><h2>املاک</h2><button class="primary small" id="addProperty">＋ ملک</button></div>
+  <input class="search" id="propertySearch" placeholder="جست‌وجوی کد، آدرس، منطقه یا قیمت...">
+  <div id="propertyCards" class="cards"></div>
+</section>
+
+<section id="followups" class="screen">
+  <div class="page-head"><h2>پیگیری‌ها</h2></div>
+  <div class="filters">
+    <button class="chip active" data-filter="all">همه</button>
+    <button class="chip" data-filter="today">امروز</button>
+    <button class="chip" data-filter="late">عقب‌افتاده</button>
+    <button class="chip" data-filter="open">باز</button>
+  </div>
+  <div id="followCards" class="cards"></div>
+</section>
+</main>
+
+<nav class="bottom-nav">
+  <button data-nav="home" class="active"><span>⌂</span>خانه</button>
+  <button data-nav="clients"><span>👤</span>مشتری</button>
+  <button data-action="new-visit" class="center-action"><span>＋</span></button>
+  <button data-nav="properties"><span>🏠</span>املاک</button>
+  <button data-nav="followups"><span>✓</span>پیگیری</button>
+</nav>
+
+<div id="modal" class="modal hidden"><div class="modal-box"><div class="modal-head"><h3 id="modalTitle"></h3><button id="closeModal">×</button></div><div id="modalBody"></div></div></div>
+<div id="toast" class="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
