@@ -168,6 +168,8 @@ document.addEventListener("click",e=>{
  const b=e.target.closest(".chip[data-filter]");if(b){$$(".filters .chip").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderFollowups(b.dataset.filter)}
  const c=e.target.closest(".chip[data-contact-filter]");if(c){$$(".contact-tabs .chip").forEach(x=>x.classList.remove("active"));c.classList.add("active");renderContacts(currentContactFilter=c.dataset.contactFilter)}
 });
+$("#addClient").onclick=()=>openClientModal();
+$("#addProperty").onclick=()=>openPropertyModal();
 $("#clientSearch").addEventListener("input",renderClients);$("#propertySearch").addEventListener("input",renderProperties);$("#contactSearch").addEventListener("input",renderContacts);
 
 $("#voiceBtn").onclick=()=>{if(!("webkitSpeechRecognition"in window||"SpeechRecognition"in window))return toast("مرورگر شما از ثبت صوتی پشتیبانی نمی‌کند");const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const r=new SR();r.lang="fa-IR";r.interimResults=false;r.onresult=e=>{$("#vNote").value+=(($("#vNote").value?" ":"")+e.results[0][0].transcript);toast("متن صوتی ثبت شد")};r.onerror=()=>toast("ثبت صوتی فعال نشد");r.start()};
