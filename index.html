@@ -33,6 +33,7 @@
     <button class="quick" data-action="new-property"><span>🏠</span><b>ملک جدید</b><small>ثبت مشخصات و مالک</small></button>
     <button class="quick" data-nav="phonebook"><span>📞</span><b>دفترچه تلفن</b><small>تماس سریع و مدیریت شماره‌ها</small></button>
     <button class="quick" data-nav="followups"><span>✓</span><b>پیگیری‌ها</b><small>امروز و موارد عقب‌افتاده</small></button>
+     <button class="quick" data-nav="reports"><span>💾</span><b>گزارش و پشتیبان</b><small>خروجی و ورود اطلاعات</small></button>
   </div>
   <div class="section-title"><div><h2>پیگیری‌های نزدیک</h2><p>مهم‌ترین تماس‌ها و اقدام‌های بعدی شما بر اساس تاریخ مرتب شده‌اند.</p></div><button class="text-btn" data-nav="followups">همه</button></div>
   <div id="homeFollowups" class="cards"></div>
@@ -84,7 +85,7 @@
   <div id="reportCards" class="report-grid"></div>
   <div class="card">
     <h3>پشتیبان‌گیری و انتقال به گوشی جدید</h3>
-    <p class="muted">با خروجی پشتیبان یک فایل JSON تاریخ‌دار از مشتری‌ها، املاک، شماره‌ها، بازدیدها، پیگیری‌ها و توضیحات بسازید. فایل را در محل امن نگه دارید و در گوشی جدید از گزینه ورود/بازیابی همان فایل را انتخاب کنید.</p>
+    <p class="muted">هر زمان خواستید یک فایل JSON تاریخ‌دار از همه اطلاعات برنامه بسازید. فایل را در Google Drive، حافظه گوشی یا هر محل امن دیگری نگه دارید و در گوشی جدید با «ورود/بازیابی پشتیبان» همان فایل را انتخاب کنید.</p>
     <p class="muted"><b>یادآوری:</b> اگر بیش از ۷ روز از آخرین پشتیبان‌گیری گذشته باشد، برنامه پیشنهاد ساخت پشتیبان جدید می‌دهد.</p>
     <div class="card-actions wrap"><button class="outline" id="exportData">⬇️ خروجی پشتیبان</button><label class="outline file-btn">⬆️ ورود/بازیابی پشتیبان<input type="file" id="importData" accept=".json,application/json" hidden></label><button class="outline danger" id="clearData">🗑️ حذف همه اطلاعات</button></div>
   </div>
@@ -97,6 +98,7 @@
   <button data-action="new-visit" class="center-action"><span>＋</span>بازدید</button>
   <button data-nav="properties"><span>🏠</span>املاک</button>
   <button data-nav="phonebook"><span>📞</span>تلفن</button>
+  <button data-nav="reports"><span>💾</span>پشتیبان</button>
 </nav>
 
 <div id="modal" class="modal hidden"><div class="modal-box"><div class="modal-head"><div><h3 id="modalTitle"></h3><p id="modalDesc"></p></div><button id="closeModal">×</button></div><div id="modalBody"></div></div></div>
