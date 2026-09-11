@@ -82,10 +82,97 @@ function syncContactFromClient(c){if(!c.phones?.length)return; c.phones.forEach(
 function deleteClient(id){if(!confirm("مشتری و تمام ارتباط‌های مرتبط حذف شود؟"))return;db.clients=db.clients.filter(x=>x.id!==id);db.contacts=db.contacts.filter(x=>x.linkId!==id);save();toast("مشتری حذف شد")}
 function newVisitForClient(n){newVisit(n)}
 
+function faDigits(s){return String(s??"").replace(/[۰-۹]/g,d=>String("۰۱۲۳۴۵۶۷۸۹".indexOf(d))).replace(/[٠-٩]/g,d=>String("٠١٢٣٤٥٦٧٨٩".indexOf(d)))}
+function numValue(s){
+ const t=faDigits(String(s??"")).replace(/,/g,"").replace(/٬/g,"").replace(/[^\d.-]/g,"");
+ const n=parseFloat(t); return Number.isFinite(n)?n:null;
+}
+function parseArea(s){return numValue(s)}
+function parsePriceToman(s){
+ let raw=faDigits(String(s??"")).trim().toLowerCase().replace(/,/g,"").replace(/٬/g,"");
+ if(!raw)return null;
+ const n=numValue(raw); if(n===null)return null;
+ if(/تریلیون|هزار\s*میلیارد/.test(raw))return n*1e12;
+ if(/میلیارد/.test(raw))return n*1e9;
+ if(/میلیون/.test(raw))return n*1e6;
+ if(/هزار/.test(raw))return n*1e3;
+ // For bare numbers, assume تومان when the stored value is large; otherwise
+ // the filter UI and natural-language query interpret small values as میلیارد.
+ return n;
+}
+function priceBillion(s){
+ const p=parsePriceToman(s);
+ if(p===null)return null;
+ if(p<1000000)return p/1e9; // old/simple entries such as 11 are treated as 11 میلیارد
+ return p/1e9;
+}
+function normalizeText(s){
+ return faDigits(String(s??"")).toLowerCase().replace(/[يى]/g,"ی").replace(/ك/g,"ک").replace(/\s+/g," ").trim();
+}
+function extractNaturalPropertyFilters(q){
+ const t=normalizeText(q);
+ const out={maxPrice:null,minPrice:null,type:"",zone:""};
+ const types=["آپارتمان","خانه","ویلایی","زمین","مغازه","اداری","باغ"];
+ for(const v of types)if(t.includes(v)){out.type=v;break}
+ const maxMatch=t.match(/(?:تا|حداکثر|زیر|کمتر\s+از|کمتر)\s*(?:قیمت)?\s*([0-9]+(?:\.[0-9]+)?)\s*(میلیارد|ملیارد|میلیون)?/);
+ const minMatch=t.match(/(?:از|حداقل|بیشتر\s+از|بیشتر)\s*(?:قیمت)?\s*([0-9]+(?:\.[0-9]+)?)\s*(میلیارد|ملیارد|میلیون)?/);
+ function toB(m){
+   if(!m)return null;
+   const n=parseFloat(m[1]); const u=m[2]||"میلیارد";
+   return /میلیون/.test(u)?n/1000:n;
+ }
+ if(maxMatch)out.maxPrice=toB(maxMatch);
+ if(minMatch)out.minPrice=toB(minMatch);
+ // If a zone was explicitly written, use the remaining phrase as a broad text
+ // search rather than guessing a numeric zone.
+ return out;
+}
+function propertyMatches(x,q){
+ const t=normalizeText(q);
+ if(!t)return true;
+ const hay=normalizeText([x.code,x.address,x.area,x.zone,x.price,x.type,x.owner,x.phone,x.notes].join(" "));
+ return hay.includes(t);
+}
 function renderProperties(){
- const q=($("#propertySearch")?.value||"").trim().toLowerCase();
- const a=db.properties.filter(x=>(x.code+" "+x.address+" "+x.area+" "+x.zone+" "+x.price+" "+x.type+" "+x.owner+" "+x.phone+" "+x.notes).toLowerCase().includes(q));
- $("#propertyCards").innerHTML=a.length?a.map(propertyCard).join(""):`<div class="card muted">ملکی پیدا نشد.</div>`;
+ const q=($("#propertySearch")?.value||"").trim();
+ const type=($("#propertyTypeFilter")?.value||"").trim();
+ const zone=normalizeText($("#propertyZoneFilter")?.value||"");
+ const minPrice=numValue($("#propertyMinPrice")?.value);
+ const maxPrice=numValue($("#propertyMaxPrice")?.value);
+ const minArea=numValue($("#propertyMinArea")?.value);
+ const maxArea=numValue($("#propertyMaxArea")?.value);
+ const status=($("#propertyStatusFilter")?.value||"").trim();
+ const natural=extractNaturalPropertyFilters(q);
+ const effectiveType=type||natural.type;
+ const a=db.properties.filter(x=>{
+   const qIsNatural=(natural.type||natural.maxPrice!==null||natural.minPrice!==null);
+   if(q && !qIsNatural && !propertyMatches(x,q))return false;
+   if(q && qIsNatural){
+     const stripped=q.replace(/آپارتمان|خانه|ویلایی|زمین|مغازه|اداری|باغ/g,"")
+       .replace(/(?:تا|حداکثر|زیر|کمتر\s+از|کمتر|از|حداقل|بیشتر\s+از|بیشتر)\s*(?:قیمت)?\s*[۰-۹0-9]+(?:\.[۰-۹0-9]+)?\s*(?:میلیارد|ملیارد|میلیون)?/g,"")
+       .trim();
+     if(stripped && !propertyMatches(x,stripped))return false;
+   }
+   if(effectiveType && normalizeText(x.type)!==normalizeText(effectiveType))return false;
+   if(zone && !normalizeText(x.zone).includes(zone) && !normalizeText(x.address).includes(zone))return false;
+   const pb=priceBillion(x.price);
+   const lo= minPrice!==null?minPrice:natural.minPrice;
+   const hi= maxPrice!==null?maxPrice:natural.maxPrice;
+   if(lo!==null && (pb===null || pb<lo))return false;
+   if(hi!==null && (pb===null || pb>hi))return false;
+   const ar=parseArea(x.area);
+   if(minArea!==null && (ar===null || ar<minArea))return false;
+   if(maxArea!==null && (ar===null || ar>maxArea))return false;
+   if(status && x.status!==status)return false;
+   return true;
+ });
+ $("#propertyResultCount").textContent=`${a.length} ملک`;
+ $("#propertyCards").innerHTML=a.length?a.map(propertyCard).join(""):`<div class="card muted">ملکی با این مشخصات پیدا نشد.</div>`;
+}
+function clearPropertyFilters(){
+ ["propertySearch","propertyZoneFilter","propertyMinPrice","propertyMaxPrice","propertyMinArea","propertyMaxArea"].forEach(id=>{const e=$("#"+id);if(e)e.value=""});
+ ["propertyTypeFilter","propertyStatusFilter"].forEach(id=>{const e=$("#"+id);if(e)e.value=""});
+ renderProperties();
 }
 function propertyCard(x){
  return `<div class="card"><div class="card-top"><div><div class="card-title">${esc(x.code||"بدون کد")} · ${esc(x.type||"")}</div><div class="muted">${esc(x.address||"آدرس ثبت نشده")} · ${esc(x.area||"")} متر · ${esc(x.zone||"")}</div></div><span class="badge">${esc(x.status||"فعال")}</span></div>
@@ -170,7 +257,7 @@ document.addEventListener("click",e=>{
 });
 $("#addClient").onclick=()=>openClientModal();
 $("#addProperty").onclick=()=>openPropertyModal();
-$("#clientSearch").addEventListener("input",renderClients);$("#propertySearch").addEventListener("input",renderProperties);$("#contactSearch").addEventListener("input",renderContacts);
+$("#clientSearch").addEventListener("input",renderClients);["propertySearch","propertyTypeFilter","propertyZoneFilter","propertyMinPrice","propertyMaxPrice","propertyMinArea","propertyMaxArea","propertyStatusFilter"].forEach(id=>$("#"+id)?.addEventListener("input",renderProperties));["propertyTypeFilter","propertyStatusFilter"].forEach(id=>$("#"+id)?.addEventListener("change",renderProperties));$("#clearPropertyFilters").onclick=clearPropertyFilters;$("#contactSearch").addEventListener("input",renderContacts);
 
 $("#voiceBtn").onclick=()=>{if(!("webkitSpeechRecognition"in window||"SpeechRecognition"in window))return toast("مرورگر شما از ثبت صوتی پشتیبانی نمی‌کند");const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const r=new SR();r.lang="fa-IR";r.interimResults=false;r.onresult=e=>{$("#vNote").value+=(($("#vNote").value?" ":"")+e.results[0][0].transcript);toast("متن صوتی ثبت شد")};r.onerror=()=>toast("ثبت صوتی فعال نشد");r.start()};
 

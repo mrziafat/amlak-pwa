@@ -62,8 +62,42 @@
 </section>
 
 <section id="properties" class="screen">
-  <div class="page-head"><div><h2>مدیریت املاک</h2><p>برای هر ملک مشخصات، قیمت، مالک، شماره تماس، وضعیت، توضیحات و اطلاعات کامل معامله را ثبت و هر زمان ویرایش کنید.</p></div><button class="primary small" id="addProperty">＋ ملک</button></div>
-  <input class="search" id="propertySearch" placeholder="جست‌وجوی کد، آدرس، منطقه، مالک یا قیمت...">
+  <div class="page-head"><div><h2>مدیریت املاک</h2><p>ملک را با جست‌وجوی آزاد یا فیلترهای دقیق نوع، منطقه، قیمت، متراژ و وضعیت پیدا کنید. اطلاعات قبلی شما حفظ می‌شود.</p></div><button class="primary small" id="addProperty">＋ ملک</button></div>
+  <div class="property-filters card">
+    <label>جست‌وجوی آزاد
+      <input class="search" id="propertySearch" placeholder="مثلاً آپارتمان تا قیمت 11، یا کد و آدرس...">
+    </label>
+    <div class="grid2">
+      <label>نوع ملک
+        <select id="propertyTypeFilter"><option value="">همه انواع</option><option>آپارتمان</option><option>خانه</option><option>ویلایی</option><option>زمین</option><option>مغازه</option><option>اداری</option><option>باغ</option><option>سایر</option></select>
+      </label>
+      <label>منطقه / محله
+        <input id="propertyZoneFilter" placeholder="مثلاً منطقه ۲، جابر بن حیان...">
+      </label>
+    </div>
+    <div class="grid2">
+      <label>حداقل قیمت (میلیارد تومان)
+        <input id="propertyMinPrice" inputmode="decimal" placeholder="مثلاً 5">
+      </label>
+      <label>حداکثر قیمت (میلیارد تومان)
+        <input id="propertyMaxPrice" inputmode="decimal" placeholder="مثلاً 11">
+      </label>
+    </div>
+    <div class="grid2">
+      <label>حداقل متراژ
+        <input id="propertyMinArea" inputmode="numeric" placeholder="مثلاً 100">
+      </label>
+      <label>حداکثر متراژ
+        <input id="propertyMaxArea" inputmode="numeric" placeholder="مثلاً 200">
+      </label>
+    </div>
+    <div class="grid2">
+      <label>وضعیت
+        <select id="propertyStatusFilter"><option value="">همه وضعیت‌ها</option><option>فعال</option><option>رزرو</option><option>فروخته شد</option><option>اجاره رفت</option><option>بایگانی</option></select>
+      </label>
+      <div class="filter-actions"><button class="outline" id="clearPropertyFilters">پاک کردن فیلترها</button><span id="propertyResultCount" class="muted"></span></div>
+    </div>
+  </div>
   <div id="propertyCards" class="cards"></div>
 </section>
 
